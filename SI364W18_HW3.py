@@ -70,13 +70,13 @@ class Tweet(db.Model):
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer,primary_key=True)
-    userName = db.Column(db.String(64),unique=True)
+    username = db.Column(db.String(64),unique=True)
     display_name = db.Column(db.String(124))
     tweets = db.relationship('Tweet',backref='User')
 
 
     def __repr__(self):
-        return '{0} | ID: {1}'.format(self.userName,self.id)
+        return '{0} | ID: {1}'.format(self.username,self.id)
 
 
 
@@ -166,10 +166,10 @@ def index():
         user_name = form.username.data
         display_name = form.display_name.data
 
-        user = User.query.filter_by(userName=user_name).first()
+        user = User.query.filter_by(username=user_name).first()
         print (user)
         if not user:
-            user = User(userName = user_name,display_name=display_name)
+            user = User(username = user_name,display_name=display_name)
             db.session.add(user)
             db.session.commit()
 
@@ -241,7 +241,7 @@ def see_all_tweets():
     tweets_users = tuple((t,User.query.filter_by(id=t.id).first()) for t in tweets)
     return render_template('all_tweets.html',all_tweets=tweets_users)
 
-    pass # Replace with code
+     # Replace with code
     # TODO 364: Fill in this view function so that it can successfully render the template all_tweets.html, which is provided.
     # HINT: Careful about what type the templating in all_tweets.html is expecting! It's a list of... not lists, but...
     # HINT #2: You'll have to make a query for the tweet and, based on that, another query for the username that goes with it...
@@ -249,8 +249,14 @@ def see_all_tweets():
 
 @app.route('/all_users')
 def see_all_users():
+    users = User.query.all()
+    return render_template('all_users.html',users=users)
+
     pass # Replace with code
     # TODO 364: Fill in this view function so it can successfully render the template all_users.html, which is provided.
+
+
+
 
 # TODO 364
 # Create another route (no scaffolding provided) at /longest_tweet with a view function get_longest_tweet (see details below for what it should do)
