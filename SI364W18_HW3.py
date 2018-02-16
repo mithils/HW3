@@ -159,6 +159,7 @@ def internal_server_error(e):
 def index():
     # Initialize the form
     form = tweetForm()
+    tweet_num = 0
 
     if form.validate_on_submit():
         tweet_text = form.text.data
@@ -179,6 +180,7 @@ def index():
             db.session.add(tweet)
             db.session.commit()
             flash('Tweet successfully added')
+            tweet_num = tweet_num + 1
             return redirect('/')
         else:
             flash('Tweet already exists')
@@ -231,10 +233,14 @@ def index():
     errors = [v for v in form.errors.values()]
     if len(errors) > 0:
         flash("!!!! ERRORS IN FORM SUBMISSION - " + str(errors))
-    return render_template('index.html',form=form) # TODO 364: Add more arguments to the render_template invocation to send data to index.html
+    return render_template('index.html',form=form,num_tweets=tweet_num) # TODO 364: Add more arguments to the render_template invocation to send data to index.html
 
 @app.route('/all_tweets')
 def see_all_tweets():
+    tweets = Tweet.query.all()
+    tweets_users = tuple((t,User.query.filter_by(id=t.id).first()) for t in tweets)
+    return render_template('all_tweets.html',all_tweets=tweets_users)
+
     pass # Replace with code
     # TODO 364: Fill in this view function so that it can successfully render the template all_tweets.html, which is provided.
     # HINT: Careful about what type the templating in all_tweets.html is expecting! It's a list of... not lists, but...
