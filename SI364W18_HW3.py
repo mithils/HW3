@@ -102,17 +102,17 @@ class User(db.Model):
 
 # HINT: Check out index.html where the form will be rendered to decide what field names to use in the form class definition
 
+def validate_displayname(form,field):
+    if str(field.data).startswith('@'):
+        raise ValidationError('Please enter a valid username')
+
 class tweetForm(FlaskForm):
     text = StringField('Enter tweet text', validators=[Required()])
-    username = StringField('Enter twitter username', validators=[Required()])
+    username = StringField('Enter twitter username', validators=[Required(),Length(min=2),validate_displayname])
     display_name = StringField('Enter user display name',validators=[Required()])
     submit = SubmitField("Submit")
 
-    def validate_displayname(self,field):
-        if len (str(field.data)) < 2:
-            raise ValidationError('Please enter valid name')
-        # if str(field.data).startswith('@'):
-        #     raise ValidationError('Please enter valid username')
+
 
 
 
@@ -159,31 +159,30 @@ def internal_server_error(e):
 def index():
     # Initialize the form
     form = tweetForm()
-    tweet_num = 0
-
+    tweet_num = len(Tweet.query.all())
     if form.validate_on_submit():
         tweet_text = form.text.data
         user_name = form.username.data
         display_name = form.display_name.data
 
         user = User.query.filter_by(username=user_name).first()
-        print (user)
-        if not user:
+        if user is None:
             user = User(username = user_name,display_name=display_name)
             db.session.add(user)
             db.session.commit()
 
         tweet = Tweet.query.filter_by(tweetText=tweet_text).first()
-        print (tweet)
-        if not tweet:
+        if tweet is None:
             tweet = Tweet(tweetText=tweet_text,user_id=user.id)
             db.session.add(tweet)
             db.session.commit()
             flash('Tweet successfully added')
-            tweet_num = tweet_num + 1
+
             return redirect('/')
         else:
             flash('Tweet already exists')
+            print(user, tweet)
+
             return redirect(url_for('see_all_tweets'))
 
 
@@ -199,25 +198,6 @@ def index():
     ## Find out if there's already a user with the entered username
     ## If there is, save it in a variable: user
     ## Or if there is not, then create one and add it to the database
-        # u = User.query.filter_by(userName = user_name).first()
-        # print (u)
-        # if u:
-        #     print ('User exists', u.userId)
-        # else:
-        #     user = User(userName = user_name)
-        #     db.session.add(user)
-        #     db.session.commit()
-        # user_id = u.userId
-        # tweet = Tweet(tweetText=tweet_text,user_id=user_id)
-        # db.session.add(tweet)
-        # db.session.commit()
-        # if tweet:
-        #     print ('Tweet exists', tweet)
-        #     #return redirect(url_for('all_tweets'))
-        # else:
-        #     db.session.add(tweet)
-        #     db.session.commit()
-
 
 
     ## If there already exists a tweet in the database with this text and this user id (the id of that user variable above...) ## Then flash a message about the tweet already existing
@@ -257,6 +237,54 @@ def see_all_users():
 
 
 
+@app.route('/longest_tweet')
+def longest_tweet():
+    tweets = Tweet.query.all()
+    tweets_users = tuple((t,User.query.filter_by(id=t.id).first()) for t in tweets)
+
+    dict_a = {}
+    tweet_id = 0
+    for tu in tweets_users:
+        tweet_x = str(tu[0]).split('(')
+        tweet = tweet_x[0]
+        tweet_len = len(tweet) - tweet.count(' ')
+        user_name = str(tu[1]).split('|')[0]
+        dict_a[tweet_id] = (tweet,user_name,tweet_len)
+        tweet_id = tweet_id + 1
+
+    x = dict_a.items()
+    key3 = lambda item:item[1][1]
+    sorted_x = sorted(x,key=key3)
+    max_tweet = sorted_x[0][1]
+    print (max_tweet)
+    tweet = max_tweet[0]
+    user_name = max_tweet[1]
+    data = (tweet,user_name)
+    print (data)
+
+
+
+
+
+
+
+
+
+    # for x in tweets:
+    #     tweet = str(x).split('(')
+    #     tweet_no_space = tweet[0].replace(" ","")
+    #     tweet_list.append(tweet_no_space)
+    #
+    # print (max(tweet_list,key=len))
+
+
+    # max_tweet = max(len())
+    # longest_tweets = tuple()
+    #
+
+    return render_template('longest_tweet.html',data=data)
+
+
 
 # TODO 364
 # Create another route (no scaffolding provided) at /longest_tweet with a view function get_longest_tweet (see details below for what it should do)
@@ -264,7 +292,11 @@ def see_all_users():
 # Create a template to accompany it called longest_tweet.html that extends from base.html.
 
 # NOTE:
-# This view function should compute and render a template (as shown in the sample application) that shows the text of the tweet currently saved in the database which has the most NON-WHITESPACE characters in it, and the username AND display name of the user that it belongs to.
+# This view function should compute and render a template (as shown in the sample application) that shows the text of the tweet currently saved in the database
+# which has the most NON-WHITESPACE characters in it,
+# and the username AND display name of the user that it belongs to.
+#
+#
 # NOTE: This is different (or could be different) from the tweet with the most characters including whitespace!
 # Any ties should be broken alphabetically (alphabetically by text of the tweet). HINT: Check out the chapter in the Python reference textbook on stable sorting.
 # Check out /longest_tweet in the sample application for an example.

@@ -1,10 +1,8 @@
 {% extends 'base.html' %}
-
 {% block content %}
+
 <ul>
-{% for tw in all_tweets %}
-    <li>{{ tw[0] }}<br><i>posted by</i> <strong>@{{ tw[1] }}</strong></li><br><br>
-{% endfor %}
+    <li>{{ data[0] }}<br><i>posted by</i> <strong>@{{ data[1] }}</strong></li><br><br>
 </ul>
 
 {% if not all_tweets %}
@@ -17,5 +15,7 @@
     <strong>*** {{ message }} ***</strong>
 {% endfor %}
 </div>
+
+
 
 {% endblock %}
