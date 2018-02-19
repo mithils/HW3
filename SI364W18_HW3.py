@@ -260,27 +260,7 @@ def longest_tweet():
     tweet = max_tweet[0]
     user_name = max_tweet[1]
     data = (tweet,user_name)
-    print (data)
 
-
-
-
-
-
-
-
-
-    # for x in tweets:
-    #     tweet = str(x).split('(')
-    #     tweet_no_space = tweet[0].replace(" ","")
-    #     tweet_list.append(tweet_no_space)
-    #
-    # print (max(tweet_list,key=len))
-
-
-    # max_tweet = max(len())
-    # longest_tweets = tuple()
-    #
 
     return render_template('longest_tweet.html',data=data)
 
